@@ -1,0 +1,20 @@
+# ::id pmid_1177_7939.32 ::date 2015-02-27T00:14:25 ::authors mrizea
+# ::snt In previous studies, we showed that Sos-1, E3b1, and Eps8 could form a trimeric complex in vivo upon concomitant overexpression of the three proteins.
+# ::note Sentence+ loaded by script SntLoaderUlf1.7.pl
+# ::save-date Wed Apr 1, 2015 ::user bbadarau ::file pmid_1177_7939_32.txt
+(s / show-01
+      :ARG0 (w / we)
+      :ARG1 (f / form-01
+            :ARG0 (a / and
+                  :op1 (p2 / protein :name (n / name :op1 "Sos-1"))
+                  :op2 (p3 / protein :name (n2 / name :op1 "E3b1"))
+                  :op3 (e2 / enzyme :name (n3 / name :op1 "Eps8")))
+            :ARG1 (m / macro-molecular-complex
+                  :mod (t / trimeric))
+            :mod (p / possible)
+            :manner (i / in-vivo)
+            :condition (o / overexpress-00
+                  :ARG2 a
+                  :manner (c / concomitant)))
+      :medium (s2 / study
+            :time (p5 / previous)))
