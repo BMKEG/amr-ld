@@ -56,7 +56,7 @@
   ```
 ## 2. AMR-LD example
 
-This AMR taken from [Innocenti et al. 2002](http://www.ncbi.nlm.nih.gov/pubmed/11777939) contains this AMR in the cjconsensus Gold-Standard data set:
+The cjconsensus Gold-Standard data set contains the following AMR (from a sentence in the results section of [Innocenti et al. 2002](http://www.ncbi.nlm.nih.gov/pubmed/11777939)):
 
 ```
 # ::id pmid_1177_7939.53 ::date 2015-03-07T10:57:15 ::annotator SDL-AMR-09 ::preferred
