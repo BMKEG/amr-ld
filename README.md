@@ -124,7 +124,7 @@ Under our current rubric, this would then be translated to the following RDF TTL
 :e :name :n3 .
 :n3 rdf:type amr-ne:name .
 :n3 :op1 "Ras" .
-:e amr:xref up:RASH_HUMAN .
+:e amr:xref up:RASH_HUMAN .     ### we could also do:   :e owl:sameAs up:RASH_HUMAN  
 :e amr:xref pfam:PF00071 .
 :a amr:condition :s3 .
 :s3 rdf:type pb:stimulate-01 .
