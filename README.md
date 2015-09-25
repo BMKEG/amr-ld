@@ -17,8 +17,14 @@
 - Linked to well know identifiers/entities
 
   ```
-    :e amr:xref up:RASH_HUMAN .`
+    :e amr:xref up:RASH_HUMAN .
     :e amr:xref pfam:PF00071 .
+  ```
+
+- Making semantic assertions of precise equivalence using `owl:sameAs' relations
+
+  ```
+    :e owl:sameAs up:RASH_HUMAN .
   ```
 
 - Query tools for free (SPARQL)
