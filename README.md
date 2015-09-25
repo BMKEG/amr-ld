@@ -16,45 +16,44 @@
 
 - Linked to well know identifiers/entities
 
-```
-  :e amr:xref up:RASH_HUMAN .`
-  :e amr:xref pfam:PF00071 .
-```
+  ```
+    :e amr:xref up:RASH_HUMAN .`
+    :e amr:xref pfam:PF00071 .
+  ```
 
 - Query tools for free (SPARQL)
   - Names of proteins in a AMR repository
 
-```
-  select ?n
-  where  { ?p rdf:type amr-ne:protein .
+  ```
+    select ?n
+    where  { ?p rdf:type amr-ne:protein .
          ?p amr:name ?no .
        ?no rdf:type amr-ne:name .
        ?no :op1 ?n }
-```
+  ```
 
    - All propbank events (verbs) that have a protein as :ARG1
 
-```
-  select ?v
-   where { ?e rdf:type ?v .
+  ```
+    select ?v
+    where { ?e rdf:type ?v .
           ?e amr:ARG1 ?p .
        ?p rdf:type amr-ne:protein .
        ### we would get all the "amr-ne:enzyme"s if reasoning enabled
        }
-```
+  ```
 
    - All propbank events (verbs) that have a protein as :ARG*
 
-```
-   select ?v
-   where { ?e rdf:type ?v .
+  ```
+    select ?v
+    where { ?e rdf:type ?v .
           ?e ?arg ?p .
        ?p rdf:type amr-ne:protein .
        ### we would get all the "amr-ne:enzyme"s if reasoning enabled
        FILTER regex(?arg, "ARG", "i") }
        }
-```
-
+  ```
 ## 2. AMR-LD example
 
 This AMR taken from [Innocenti et al. 2002](http://www.ncbi.nlm.nih.gov/pubmed/11777939) contains this AMR in the cjconsensus Gold-Standard data set:
