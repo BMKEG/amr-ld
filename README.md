@@ -21,7 +21,7 @@
     :e amr:xref pfam:PF00071 .
   ```
 
-- Making semantic assertions of precise equivalence using `owl:sameAs' relations
+- Making semantic assertions of precise equivalence using `owl:sameAs` relations
 
   ```
     :e owl:sameAs up:RASH_HUMAN .
