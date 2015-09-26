@@ -146,15 +146,17 @@ Under our current rubric, this would then be translated to the following RDF TTL
 :n rdf:type amr:name .
 :n :op1 "Sos-1" .
 ```
-## 'amr_to_rdf.py`
+## `amr_to_rdf.py`
 
-Run the script:
+This is a simple script that reads the AMR using libraries from the [AMRICA](https://github.com/nsaphra/AMRICA) toolkit and then transposes the graph structure of the AMR into RDF using [rdflib](https://github.com/RDFLib/rdflib). We use simple heuristics to map namespaces and to generate valid RDF for the AMR as needed. 
+
+How to run the script:
 
 ```
 $ python amr_to_rdf.py -i <input AMR file> -o <output RDF file>
 ```
 
-Test the script:
+How to test the script:
 
 ```
 $ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf
