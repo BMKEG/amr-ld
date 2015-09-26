@@ -146,3 +146,17 @@ Under our current rubric, this would then be translated to the following RDF TTL
 :n rdf:type amr:name .
 :n :op1 "Sos-1" .
 ```
+## 'amr_to_rdf.py`
+
+Run the script:
+
+```
+$ python amr_to_rdf.py -i <input AMR file> -o <output RDF file>
+```
+
+Test the script:
+
+```
+$ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf
+```
+
