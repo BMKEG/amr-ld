@@ -1,0 +1,70 @@
+@prefix ns1: <http://amr.isi.edu/rdf/core-amr#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#root01> a ns1:AMR ;
+    ns1:has-date "2015-02-27T00:14:25" ;
+    ns1:has-id "pmid_1177_7939.32" ;
+    ns1:has-sentence "In previous studies, we showed that Sos-1, E3b1, and Eps8 could form a trimeric complex in vivo upon concomitant overexpression of the three proteins." ;
+    ns1:root <http://amr.isi.edu/amr_data/pmid_1177_7939.32#s> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#c> a ns1:concomitant .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#e2> a <http://amr.isi.edu/entity-types#enzyme> ;
+    ns1:name <http://amr.isi.edu/amr_data/pmid_1177_7939.32#n3> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#f> a <https://verbs.colorado.edu/propbank#form-01> ;
+    ns1:ARG0 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#a> ;
+    ns1:ARG1 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#m> ;
+    ns1:condition <http://amr.isi.edu/amr_data/pmid_1177_7939.32#o> ;
+    ns1:manner <http://amr.isi.edu/amr_data/pmid_1177_7939.32#i> ;
+    ns1:mod <http://amr.isi.edu/amr_data/pmid_1177_7939.32#p> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#i> a ns1:in-vivo .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#m> a <http://amr.isi.edu/entity-types#macro-molecular-complex> ;
+    ns1:mod <http://amr.isi.edu/amr_data/pmid_1177_7939.32#t> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#n> a ns1:name ;
+    ns1:op1 "Sos-1" .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#n2> a ns1:name ;
+    ns1:op1 "E3b1" .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#n3> a ns1:name ;
+    ns1:op1 "Eps8" .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#o> a <https://verbs.colorado.edu/propbank#overexpress-00> ;
+    ns1:ARG2 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#a> ;
+    ns1:manner <http://amr.isi.edu/amr_data/pmid_1177_7939.32#c> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#p> a ns1:possible .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#p2> a <http://amr.isi.edu/entity-types#protein> ;
+    ns1:name <http://amr.isi.edu/amr_data/pmid_1177_7939.32#n> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#p3> a <http://amr.isi.edu/entity-types#protein> ;
+    ns1:name <http://amr.isi.edu/amr_data/pmid_1177_7939.32#n2> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#p5> a ns1:previous .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#s2> a ns1:study ;
+    ns1:time <http://amr.isi.edu/amr_data/pmid_1177_7939.32#p5> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#t> a ns1:trimeric .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#w> a ns1:we .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#a> a ns1:and ;
+    ns1:op1 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#p2> ;
+    ns1:op2 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#p3> ;
+    ns1:op3 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#e2> .
+
+<http://amr.isi.edu/amr_data/pmid_1177_7939.32#s> a <https://verbs.colorado.edu/propbank#show-01> ;
+    ns1:ARG0 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#w> ;
+    ns1:ARG1 <http://amr.isi.edu/amr_data/pmid_1177_7939.32#f> ;
+    ns1:TOP <http://amr.isi.edu/amr_data/pmid_1177_7939.32#s> ;
+    ns1:medium <http://amr.isi.edu/amr_data/pmid_1177_7939.32#s2> .
+
