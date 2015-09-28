@@ -108,7 +108,7 @@ def run_main(args):
 
     amrs_same_sent.append(cur_amr)
 
-  outfile.write( g.serialize(format='turtle') )
+  outfile.write( g.serialize(format=args.format) )
   outfile.close()
 
   infile.close()
