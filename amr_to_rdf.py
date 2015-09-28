@@ -121,7 +121,7 @@ if __name__ == '__main__':
   parser.add_argument('-i', '--infile', help='amr input file')
   parser.add_argument('-o', '--outfile', help='RDF output file')
   parser.add_argument('-v', '--verbose', action='store_true')
-  parser.add_argument('-f', '--format', nargs='?', default='n3',
+  parser.add_argument('-f', '--format', nargs='?', default='nt',
         help="RDF Format: xml, n3, nt, trix, rdfa")
 
   args = parser.parse_args()
