@@ -153,12 +153,12 @@ This is a simple script that reads the AMR using libraries from the [AMRICA](htt
 How to run the script:
 
 ```
-$ python amr_to_rdf.py -i <input AMR file> -o <output RDF file>
+$ python amr_to_rdf.py -i <input AMR file> -o <output RDF file> [-f <format>]
 ```
 
 How to test the script:
 
 ```
-$ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf
+$ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf -f n3
 ```
 
