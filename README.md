@@ -159,6 +159,6 @@ $ python amr_to_rdf.py -i <input AMR file> -o <output RDF file> [-f <format>]
 How to test the script:
 
 ```
-$ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf -f n3
+$ python amr_to_rdf.py -i test/bio_ras_0001_1.txt -o out.rdf -f nt
 ```
 
