@@ -121,7 +121,8 @@ if __name__ == '__main__':
   parser.add_argument('-i', '--infile', help='amr input file')
   parser.add_argument('-o', '--outfile', help='RDF output file')
   parser.add_argument('-v', '--verbose', action='store_true')
-  # TODO make interactive option and option to process a specific range
+  parser.add_argument('-f', '--format', nargs='?', default='n3',
+        help="RDF Format: xml, n3, nt, trix, rdfa")
 
   args = parser.parse_args()
   
