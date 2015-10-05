@@ -1,0 +1,61 @@
+[
+  {
+    "root": {
+      "domain": {
+        "op1": {
+          "@id": "g", 
+          "@type": "gene", 
+          "name": {
+            "@id": "n", 
+            "@type": "name", 
+            "op1": "KRAS"
+          }
+        }, 
+        "@id": "a", 
+        "@type": "and", 
+        "op2": {
+          "@id": "g2", 
+          "@type": "gene", 
+          "name": {
+            "@id": "n2", 
+            "@type": "name", 
+            "op1": "PIK3CA"
+          }
+        }, 
+        "op3": {
+          "@id": "g3", 
+          "@type": "gene", 
+          "name": {
+            "@id": "n3", 
+            "@type": "name", 
+            "op1": "BRAF"
+          }
+        }
+      }, 
+      "@id": "o", 
+      "@type": "oncogene", 
+      "location": {
+        "@id": "c", 
+        "@type": "cancer"
+      }
+    }, 
+    "has-date": "2014-08-13T14:22:25", 
+    "@context": {
+      "and": "http://amr.isi.edu/rdf/core-amr#and", 
+      "oncogene": "http://amr.isi.edu/rdf/core-amr#oncogene", 
+      "kill-01": "https://verbs.colorado.edu/propbank#kill-01", 
+      "name": "http://amr.isi.edu/rdf/core-amr#name", 
+      "cancer": "http://amr.isi.edu/rdf/core-amr#cancer", 
+      "most": "http://amr.isi.edu/rdf/core-amr#most", 
+      "@base": "http://amr.isi.edu/amr_data/bio.ras_0001_1#", 
+      "human": "http://amr.isi.edu/rdf/core-amr#human", 
+      "gene": "http://amr.isi.edu/entity-types#gene", 
+      "root": "http://amr.isi.edu/rdf/core-amr#root", 
+      "frequent": "http://amr.isi.edu/rdf/core-amr#frequent", 
+      "mutate-01": "https://verbs.colorado.edu/propbank#mutate-01"
+    }, 
+    "@id": "bio.ras_0001_1", 
+    "@type": "http://amr.isi.edu/rdf/core-amr#AMR", 
+    "has-sentence": "The most frequently mutated oncogenes in the deadliest cancers responsible for human mortality are KRAS , PIK3CA and BRAF ."
+  }
+]
