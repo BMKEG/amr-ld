@@ -17,6 +17,7 @@ from compare_smatch import amr_metadata
 from rdflib.namespace import RDF
 from rdflib.namespace import RDFS
 from rdflib.plugins import sparql
+from Carbon.QuickDraw import frame
 
 cur_sent_id = 0
     
@@ -38,7 +39,7 @@ def run_main(args):
     
     # create the basic RDF data structure
     g = rdflib.Graph()
-
+    
     # namespaces
     amr_ns = rdflib.Namespace("http://amr.isi.edu/rdf/core-amr#")
     pb_ns = rdflib.Namespace("https://verbs.colorado.edu/propbank#")
@@ -46,6 +47,36 @@ def run_main(args):
     amr_ne_ns = rdflib.Namespace("http://amr.isi.edu/entity-types#")
     up_ns = rdflib.Namespace("http://www.uniprot.org/uniprot/")
     pfam_ns = rdflib.Namespace("http://pfam.xfam.org/family/")
+
+    # Basic AMR Ontology consisting of 
+    #   1. concepts
+    #   2. roles 
+    #   3. strings (which are actually going to be Literal(string)s
+    conceptClass = amr_ns.Concept
+    neClass = amr_ns.NamedEntity
+    frameClass = amr_ns.Frame
+    roleClass = amr_ns.Role
+    frameRoleClass = pb_ns.FrameRole
+    
+    g.add( (conceptClass, rdflib.RDF.type, rdflib.RDFS.Class) )
+    g.add( (conceptClass, RDFS.label, rdflib.Literal("AMR_Concept") ) )
+    g.add( (conceptClass, RDFS.comment, rdflib.Literal("Class of all concepts expressed in AMRs") ) )
+
+    g.add( (neClass, rdflib.RDF.type, conceptClass) )
+    g.add( (neClass, RDFS.label, rdflib.Literal("AMR_NamedEntity") ) )
+    g.add( (neClass, RDFS.comment, rdflib.Literal("Class of all named entities expressed in AMRs") ) )
+
+    g.add( (frameClass, rdflib.RDF.type, conceptClass) )
+    g.add( (frameClass, RDFS.label, rdflib.Literal("AMR_Frame") ) )
+    g.add( (frameClass, RDFS.comment, rdflib.Literal("Class of all frames expressed in AMRs") ) )
+
+    g.add( (roleClass, rdflib.RDF.type, rdflib.RDFS.Class) )
+    g.add( (roleClass, RDFS.label, rdflib.Literal("AMR_Role") ) )
+    g.add( (roleClass, RDFS.comment, rdflib.Literal("Class of all roles expressed in AMRs") ) )
+
+    g.add( (frameRoleClass, rdflib.RDF.type, roleClass) )
+    g.add( (frameRoleClass, RDFS.label, rdflib.Literal("FrameRole") ) )
+    g.add( (frameRoleClass, RDFS.comment, rdflib.Literal("Class of all roles of PropBank frames") ) )
     
     amr_count = 0
     ns_lookup = {}
@@ -53,6 +84,7 @@ def run_main(args):
     pmid_patt = re.compile('.*pmid_(\d+)_(\d+).*')
     word_align_patt = re.compile('(.*)\~e\.(.+)')
     opN_patt = re.compile('op(\d+)')
+    arg_patt = re.compile('ARG\d+')
 
     nefile = codecs.open("ne.txt", encoding='utf8')
     for l in nefile:
@@ -133,6 +165,7 @@ def run_main(args):
             g.add( (a1, amr_ns.root, temp_ns[amr.root]) )
 
             # Add triples for setting types pointing to other resources
+            frames = {}
             for (p, s, o) in inst:
                     
                 o = strip_word_alignments(o,word_align_patt)
@@ -140,19 +173,26 @@ def run_main(args):
                 #        g.add( (temp_ns[s], 
                 #                        amr_ns['has-word-pos'], 
                 #                        rdflib.Literal(word_pos)) )            
-                    
+                  
                 if( ns_lookup.get(o,None) is not None ):
                     o_resolved = amr_ne_ns[o]
+                    g.add( (o_resolved, rdflib.RDF.type, neClass) )
                 elif( re.search('\-\d+$', o) is not None ):
                     o_resolved = pb_ns[o]
+                    g.add( (o_resolved, rdflib.RDF.type, frameClass) ) 
                 elif( o != 'name' ): # ignore 'name' objects but add all others
                     o_resolved = amr_ns[o]
+                    g.add( (o_resolved, rdflib.RDF.type, conceptClass) )
                  
+                frames[s] = o
                 g.add( (temp_ns[s], RDF.type, o_resolved) )
 
             # Add object properties for local links in the current AMR
             for (p, s, o) in rel2:
                 
+                if( p == "TOP" ):
+                    continue
+                 
                 # Do not include word positions for predicates 
                 # (since they are more general and do not need to linked to everything).     
                 p = strip_word_alignments(p,word_align_patt)                
@@ -161,7 +201,12 @@ def run_main(args):
                 # remember which objects have name objects 
                 if( p == 'name' ):
                     label_lookup_table[o] = s 
+                elif( re.search('ARG\d+$', p) is not None ):
+                    frameRole = frames[s] + "." + p
+                    g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
+                    g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )                    
                 else:
+                    g.add( (amr_ns[p], rdflib.RDF.type, roleClass) )
                     g.add( (temp_ns[s], amr_ns[p], temp_ns[o]) )
 
             # Add data properties in the current AMR
@@ -183,6 +228,12 @@ def run_main(args):
                         labels[ss] = []
                     
                     labels[ss].append( (opN, l) )
+
+                # Special treatment for propbank roles.                 
+                elif( re.search('ARG\d+$', p) is not None ):
+                    frameRole = frames[s] + "." + p
+                    g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
+                    g.add( (temp_ns[s], pb_ns[frameRole], rdflib.Literal(l) ) )                    
                 
                 # Otherwise, it's just a literal 
                 else:
@@ -192,8 +243,7 @@ def run_main(args):
             # ["\n".join([i.split(' ')[j] for j in range(5)]) for i in g.vs["id"]]
             for key in labels.keys():
                 labelArray = [i[1] for i in sorted(labels[key])];
-                if( len(labelArray) > 1 ) :
-                    pauseHere = 1;
+                
                 label = " ".join( labelArray )
                 g.add( (temp_ns[key], 
                         RDFS.label, 
@@ -219,7 +269,7 @@ def run_main(args):
 
     #for row in qres:
     #    print("%s type %s" % row)
-    print (amr_count + " AMRs converted")
+    print ("%d AMRs converted" % amr_count)
     outfile.write( g.serialize(format=args.format) )
     outfile.close()
 
