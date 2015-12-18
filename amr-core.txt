@@ -1,0 +1,52 @@
+accompanier, age
+beneficiary
+compared-to, concession, condition, consist-of
+degree, destination, direction, domain, duration
+example, extent
+frequency
+instrument
+location
+manner, medium, mod, mode
+ord
+part, path, polarity, poss, purpose
+quant
+scale, source, subevent
+time, topic, unit
+value
+wiki
+calendar, century, day, dayperiod, decade, era, month, quarter, season, timezone, weekday, year, year2
+prep-against, prep-along-with, prep-amid, prep-among, prep-as, prep-at
+prep-by
+prep-for, prep-from
+prep-in, prep-in-addition-to, prep-into
+prep-on, prep-on-behalf-of, prep-out-of
+prep-to, prep-toward
+prep-under
+prep-with, prep-without
+conj-as-if
+location-of
+polarity
+degree
+mode 
+amr-unknown
+interrogative
+imperative
+expressive
+and
+or
+either
+neither
+after
+near
+between
+all
+no
+that
+more
+too
+most
+subset, subset-of
+wiki, xref
+product-of, sum-of
+statistical-test
+date-entity, date-interval

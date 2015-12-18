@@ -12,12 +12,14 @@ import argparse_config
 import codecs
 import os
 import re
+import textwrap
 
 from compare_smatch import amr_metadata
 from rdflib.namespace import RDF
 from rdflib.namespace import RDFS
 from rdflib.plugins import sparql
 from Carbon.QuickDraw import frame
+from numpy.f2py.auxfuncs import throw_error
 
 cur_sent_id = 0
     
@@ -37,16 +39,29 @@ def run_main(args):
     infile = codecs.open(args.infile, encoding='utf8')
     outfile = open(args.outfile, 'w')
     
+    pBankRoles = True
+    if( not(args.pbankRoles == u'1') ):
+        pBankRoles = False
+                
     # create the basic RDF data structure
     g = rdflib.Graph()
     
     # namespaces
     amr_ns = rdflib.Namespace("http://amr.isi.edu/rdf/core-amr#")
-    pb_ns = rdflib.Namespace("https://verbs.colorado.edu/propbank#")
-    ontonotes_ns = rdflib.Namespace("https://catalog.ldc.upenn.edu/LDC2013T19#")
+    amr_terms_ns = rdflib.Namespace("http://amr.isi.edu/rdf/amr-terms#")
+    amr_data = rdflib.Namespace("http://amr.isi.edu/amr_data#")
+    pb_ns = rdflib.Namespace("http://amr.isi.edu/frames/ld/v1.2.2/")
     amr_ne_ns = rdflib.Namespace("http://amr.isi.edu/entity-types#")
+
     up_ns = rdflib.Namespace("http://www.uniprot.org/uniprot/")
     pfam_ns = rdflib.Namespace("http://pfam.xfam.org/family/")
+    ontonotes_ns = rdflib.Namespace("https://catalog.ldc.upenn.edu/LDC2013T19#")
+
+    g.namespace_manager.bind('propbank', pb_ns, replace=True)
+    g.namespace_manager.bind('amr-core', amr_ns, replace=True)
+    g.namespace_manager.bind('amr-terms', amr_terms_ns, replace=True)
+    g.namespace_manager.bind('entity-types', amr_ne_ns, replace=True)    
+    g.namespace_manager.bind('amr-data', amr_data, replace=True)    
 
     # Basic AMR Ontology consisting of 
     #   1. concepts
@@ -59,39 +74,65 @@ def run_main(args):
     frameRoleClass = pb_ns.FrameRole
     
     g.add( (conceptClass, rdflib.RDF.type, rdflib.RDFS.Class) )
-    g.add( (conceptClass, RDFS.label, rdflib.Literal("AMR_Concept") ) )
-    g.add( (conceptClass, RDFS.comment, rdflib.Literal("Class of all concepts expressed in AMRs") ) )
+    g.add( (conceptClass, RDFS.label, rdflib.Literal("AMR-Concept") ) )
+    #g.add( (conceptClass, RDFS.comment, rdflib.Literal("Class of all concepts expressed in AMRs") ) )
 
     g.add( (neClass, rdflib.RDF.type, conceptClass) )
-    g.add( (neClass, RDFS.label, rdflib.Literal("AMR_NamedEntity") ) )
-    g.add( (neClass, RDFS.comment, rdflib.Literal("Class of all named entities expressed in AMRs") ) )
+    g.add( (neClass, RDFS.label, rdflib.Literal("AMR-EntityType") ) )
+    #g.add( (neClass, RDFS.comment, rdflib.Literal("Class of all named entities expressed in AMRs") ) )
 
-    g.add( (frameClass, rdflib.RDF.type, conceptClass) )
-    g.add( (frameClass, RDFS.label, rdflib.Literal("AMR_Frame") ) )
-    g.add( (frameClass, RDFS.comment, rdflib.Literal("Class of all frames expressed in AMRs") ) )
+    g.add( (neClass, rdflib.RDF.type, conceptClass) )
+    g.add( (neClass, RDFS.label, rdflib.Literal("AMR-Term") ) )
+    #g.add( (neClass, RDFS.comment, rdflib.Literal("Class of all named entities expressed in AMRs") ) )
 
     g.add( (roleClass, rdflib.RDF.type, rdflib.RDFS.Class) )
-    g.add( (roleClass, RDFS.label, rdflib.Literal("AMR_Role") ) )
-    g.add( (roleClass, RDFS.comment, rdflib.Literal("Class of all roles expressed in AMRs") ) )
+    g.add( (roleClass, RDFS.label, rdflib.Literal("AMR-Role") ) )
+    #g.add( (roleClass, RDFS.comment, rdflib.Literal("Class of all roles expressed in AMRs") ) )
 
     g.add( (frameRoleClass, rdflib.RDF.type, roleClass) )
-    g.add( (frameRoleClass, RDFS.label, rdflib.Literal("FrameRole") ) )
-    g.add( (frameRoleClass, RDFS.comment, rdflib.Literal("Class of all roles of PropBank frames") ) )
+    g.add( (frameRoleClass, RDFS.label, rdflib.Literal("AMR-PropBank-Role") ) )
+    #g.add( (frameRoleClass, RDFS.comment, rdflib.Literal("Class of all roles of PropBank frames") ) )
+
+    g.add( (frameClass, rdflib.RDF.type, conceptClass) )
+    g.add( (frameClass, RDFS.label, rdflib.Literal("AMR-PropBank-Frame") ) )
+    #g.add( (frameClass, RDFS.comment, rdflib.Literal("Class of all frames expressed in AMRs") ) )
     
     amr_count = 0
     ns_lookup = {}
+    class_lookup = {}
     nelist = []
+    corelist = []
+    pattlist = []
     pmid_patt = re.compile('.*pmid_(\d+)_(\d+).*')
     word_align_patt = re.compile('(.*)\~e\.(.+)')
+    propbank_patt = re.compile('^(.*)\-\d+$')
     opN_patt = re.compile('op(\d+)')
     arg_patt = re.compile('ARG\d+')
 
-    nefile = codecs.open("ne.txt", encoding='utf8')
-    for l in nefile:
+    with open('amr-ne.txt') as f:
+        ne_lines = f.readlines()
+    for l in ne_lines:
         for w in re.split(",\s*", l):
+            w = w.rstrip('\r\n')
             nelist.append( w )
     for ne in nelist:
-            ns_lookup[ne] = amr_ne_ns    
+            ns_lookup[ne] = amr_ne_ns
+            class_lookup[ne] = neClass
+
+    with open('amr-core.txt') as f:
+        core_lines = f.readlines()
+    for l in core_lines:
+        for w in re.split(",\s*", l):
+            w = w.rstrip('\r\n')
+            corelist.append( w )
+    for c in corelist:
+            ns_lookup[c] = amr_ns    
+            class_lookup[c] = conceptClass
+
+
+    pattfile = codecs.open("amr-core-patterns.txt", encoding='utf8')
+    for l in pattfile:
+        pattlist.append( w )
     
     amrs_same_sent = []
     
@@ -136,7 +177,8 @@ def run_main(args):
             if( amr.metadata.get('snt', None) is not None):
                     g.add( (a1, 
                             amr_ns['has-sentence'], 
-                            rdflib.Literal(amr.metadata['snt'])))
+                            rdflib.Literal(amr.metadata['snt']) )
+                          )
 
             #:a1 amr:has-date "2015-03-07T10:57:15
             if( amr.metadata.get('date', None) is not None):
@@ -175,14 +217,25 @@ def run_main(args):
                 #                        rdflib.Literal(word_pos)) )            
                   
                 if( ns_lookup.get(o,None) is not None ):
-                    o_resolved = amr_ne_ns[o]
-                    g.add( (o_resolved, rdflib.RDF.type, neClass) )
+                    resolved_ns = ns_lookup.get(o,None)
+                    o_resolved = resolved_ns[o]
+                    if( class_lookup.get(o,None) is not None): 
+                        g.add( (o_resolved, rdflib.RDF.type, class_lookup.get(o,None)) )
+                    else:
+                        raise ValueError(o_resolved + ' does not have a class assigned.')
                 elif( re.search('\-\d+$', o) is not None ):
-                    o_resolved = pb_ns[o]
+                    #match = propbank_patt.match(o)
+                    #str = ""
+                    #if match:
+                    #    str = match.group(1)
+                    #o_resolved = pb_ns[str + ".html#" +o ]
+                    o_resolved = pb_ns[ o ]
                     g.add( (o_resolved, rdflib.RDF.type, frameClass) ) 
-                elif( o != 'name' ): # ignore 'name' objects but add all others
-                    o_resolved = amr_ns[o]
+                elif( not(o == 'name') ): # ignore 'name' objects but add all others
+                    o_resolved = amr_terms_ns[o]
                     g.add( (o_resolved, rdflib.RDF.type, conceptClass) )
+                else: 
+                    continue
                  
                 frames[s] = o
                 g.add( (temp_ns[s], RDF.type, o_resolved) )
@@ -201,13 +254,26 @@ def run_main(args):
                 # remember which objects have name objects 
                 if( p == 'name' ):
                     label_lookup_table[o] = s 
-                elif( re.search('ARG\d+$', p) is not None ):
+                elif( re.search('^ARG\d+$', p) is not None ):
+
                     frameRole = frames[s] + "." + p
+                    if( not(pBankRoles) ): 
+                        frameRole = p
+
+                    g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
+                    g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )                    
+
+                elif( re.search('^ARG\d+\-of$', p) is not None ):
+                    
+                    frameRole = frames[o] + "." + p
+                    if( not(pBankRoles) ): 
+                        frameRole = p
+                        
                     g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
                     g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )                    
                 else:
-                    g.add( (amr_ns[p], rdflib.RDF.type, roleClass) )
-                    g.add( (temp_ns[s], amr_ns[p], temp_ns[o]) )
+                    g.add( (amr_terms_ns[p], rdflib.RDF.type, roleClass) )
+                    g.add( (temp_ns[s], amr_terms_ns[p], temp_ns[o]) )
 
             # Add data properties in the current AMR
             labels = {}
@@ -231,13 +297,17 @@ def run_main(args):
 
                 # Special treatment for propbank roles.                 
                 elif( re.search('ARG\d+$', p) is not None ):
+                    
                     frameRole = frames[s] + "." + p
+                    if( not(pBankRoles) ): 
+                        frameRole = p
+                    
                     g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
                     g.add( (temp_ns[s], pb_ns[frameRole], rdflib.Literal(l) ) )                    
                 
                 # Otherwise, it's just a literal 
                 else:
-                    g.add( (temp_ns[s], amr_ns[p], rdflib.Literal(l) ) )
+                    g.add( (temp_ns[s], amr_terms_ns[p], rdflib.Literal(l) ) )
             
             # Add labels here
             # ["\n".join([i.split(' ')[j] for j in range(5)]) for i in g.vs["id"]]
@@ -280,6 +350,7 @@ def run_main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--infile', help='amr input file')
+    parser.add_argument('-pbr', '--pbankRoles', default='1', help='Do we include PropBank Roles?')
     parser.add_argument('-o', '--outfile', help='RDF output file')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-f', '--format', nargs='?', default='nt',
