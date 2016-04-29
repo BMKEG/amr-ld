@@ -2,7 +2,7 @@
 """
 amr_to_jsonld.py
 
-Note, this is derived from the source code to AMRICA's disagree.py script by Naomi Saphra (nsaphra@jhu.edu)
+Note, this is derived from the source code to AMRICA's disagree_btwn_sents.py script by Naomi Saphra (nsaphra@jhu.edu)
 Copyright(c) 2015. All rights reserved.
 
 """

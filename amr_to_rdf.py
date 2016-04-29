@@ -2,7 +2,7 @@
 """
 amr_to_rdf.py
 
-Note, this is derived from the source code to AMRICA's disagree.py script by Naomi Saphra (nsaphra@jhu.edu)
+Note, this is derived from the source code to AMRICA's disagree_btwn_sents.py script by Naomi Saphra (nsaphra@jhu.edu)
 Copyright(c) 2015. All rights reserved.
 
 """
@@ -30,19 +30,40 @@ def strip_word_alignments(str, patt):
         
     return str
             
-def run_main(args):
+def run_main(args): 
+
+    inPath = args.inPath
+    outPath = args.outPath
+
+    #
+    # If the path is a directory then loop over the directory contents,
+    # Else run the script on the file as described
+    #
+    if( os.path.isfile(inPath) ):
+        run_main_on_file(args)
+    else:
+        if not os.path.exists(outPath):
+            os.makedirs(outPath)
+        for fn in os.listdir(inPath):
+            if os.path.isfile(inPath+"/"+fn) and fn.endswith(".txt"):
+                args.inPath =inPath + "/" + fn
+                args.outPath = outPath + "/" + fn + ".rdf"
+                run_main_on_file(args)
+
+def run_main_on_file(args):
+    
     try:
         import rdflib
     except ImportError:
         raise ImportError('requires rdflib')
-
-    infile = codecs.open(args.infile, encoding='utf8')
-    outfile = open(args.outfile, 'w')
+                
+    infile = codecs.open(args.inPath, encoding='utf8')
+    outfile = open(args.outPath, 'w')
     
     pBankRoles = True
     if( not(args.pbankRoles == u'1') ):
         pBankRoles = False
-                
+                                
     # create the basic RDF data structure
     g = rdflib.Graph()
     
@@ -349,9 +370,11 @@ def run_main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--infile', help='amr input file')
+    
+    parser.add_argument('-i', '--inPath', help='AMR input file or directory')
+    parser.add_argument('-o', '--outPath', help='RDF output file or directory')
+
     parser.add_argument('-pbr', '--pbankRoles', default='1', help='Do we include PropBank Roles?')
-    parser.add_argument('-o', '--outfile', help='RDF output file')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-f', '--format', nargs='?', default='nt',
                         help="RDF Format: xml, n3, nt, trix, rdfa")

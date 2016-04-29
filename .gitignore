@@ -4,3 +4,4 @@
 .settings
 *.pyc
 out.rdf
+.DS_Store

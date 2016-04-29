@@ -64,6 +64,10 @@ def build_arg_parser():
       type=argparse.FileType('r'),
       help='Two files containing AMR pairs. AMRs in each file are separated by a single blank line')
   parser.add_argument(
+      '-o',
+      '--outfile',
+      help='Output')
+  parser.add_argument(
       '-r',
       type=int,
       default=4,
@@ -97,6 +101,13 @@ def build_arg_parser2():
       dest="f",
       type="string",
       help='Two files containing AMR pairs. AMRs in each file are separated by a single blank line. This option is required.')
+  parser.add_option(
+      "-o",
+      "--outfile",
+      nargs=1,
+      dest="o",
+      type="string",
+      help='Output file.')
   parser.add_option(
       "-r",
       "--restart",
@@ -712,7 +723,15 @@ def main(args):
   total_test_num = 0
   total_gold_num = 0
   sent_num = 1
+
   prev_amr1 = ""
+  outfile = open(args.outfile, 'w')
+  if not single_score:     
+    outfile.write("Sentence")
+    if pr_flag:
+      outfile.write("\tPrecision\tRecall")
+    outfile.write("\tSmatch\n")
+    
   while True:
     cur_amr1 = get_amr_line(args.f[0])
     cur_amr2 = get_amr_line(args.f[1])
@@ -796,15 +815,20 @@ def main(args):
             best_match, gold_inst, test_inst, True)
     if not single_score:
       (precision,
-       recall,
-       best_f_score) = compute_f(best_match_num,
+      recall,
+      best_f_score) = compute_f(best_match_num,
                                  len(test_rel1) + len(test_inst) + len(test_rel2),
                                  len(gold_rel1) + len(gold_inst) + len(gold_rel2))
-      print str(sent_num)
+      if pr_flag:
+        outfile.write( "\t%.2f" % precision )
+        outfile.write( "\t%.2f" % recall )
+      outfile.write( "\t%.2f" % best_f_score )
+      outfile.write(str(sent_num))
+      outfile.write( "\n" )
+      print "%d" % sent_num + "\t" + "%.2f" % best_f_score
       if pr_flag:
         print "Precision: %.2f" % precision
-        print "Recall: %.2f" % recall
-      print "%.2f" % best_f_score
+        print "Recall: %.2f" % recall 
     total_match_num += best_match_num
     total_test_num += len(test_rel1) + len(test_rel2) + len(test_inst)
     total_gold_num += len(gold_rel1) + len(gold_rel2) + len(gold_inst)
