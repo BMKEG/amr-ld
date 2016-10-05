@@ -46,7 +46,7 @@ more
 too
 most
 subset, subset-of
-wiki, xref
+wiki
 product-of, sum-of
 statistical-test
 date-entity, date-interval

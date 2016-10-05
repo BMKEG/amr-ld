@@ -64,6 +64,13 @@ def run_main_on_file(args):
     if( not(args.pbankRoles == u'1') ):
         pBankRoles = False
                                 
+    xref_namespace_lookup = {}
+    with open('xref_namespaces.txt') as f:
+        xref_lines = f.readlines()
+    for l in xref_lines:
+        line = re.split("\t", l)
+        xref_namespace_lookup[line[0]] = line[1].rstrip('\r\n')
+                                
     # create the basic RDF data structure
     g = rdflib.Graph()
     
@@ -83,7 +90,12 @@ def run_main_on_file(args):
     g.namespace_manager.bind('amr-terms', amr_terms_ns, replace=True)
     g.namespace_manager.bind('entity-types', amr_ne_ns, replace=True)    
     g.namespace_manager.bind('amr-data', amr_data, replace=True)    
-
+    
+    for k in xref_namespace_lookup.keys():
+        temp_ns = rdflib.Namespace(xref_namespace_lookup[k])
+        g.namespace_manager.bind(k, temp_ns, replace=True)    
+        xref_namespace_lookup[k] = temp_ns
+    
     # Basic AMR Ontology consisting of 
     #   1. concepts
     #   2. roles 
@@ -149,8 +161,7 @@ def run_main_on_file(args):
     for c in corelist:
             ns_lookup[c] = amr_ns    
             class_lookup[c] = conceptClass
-
-
+            
     pattfile = codecs.open("amr-core-patterns.txt", encoding='utf8')
     for l in pattfile:
         pattlist.append( w )
@@ -161,7 +172,10 @@ def run_main_on_file(args):
     while True:
         (amr_line, comments) = amr_metadata.get_amr_line(infile)
         cur_amr = None
+
+        vb_lookup = {}
         label_lookup_table = {}
+        xref_variables = {}
     
         if amr_line:
             cur_amr = amr_metadata.AmrMeta.from_parse(amr_line, comments)
@@ -252,9 +266,12 @@ def run_main_on_file(args):
                     #o_resolved = pb_ns[str + ".html#" +o ]
                     o_resolved = pb_ns[ o ]
                     g.add( (o_resolved, rdflib.RDF.type, frameClass) ) 
-                elif( not(o == 'name') ): # ignore 'name' objects but add all others
+                elif( o == 'xref' and args.fixXref): 
+                    continue
+                elif( not(o == 'name') ): # ignore 'name' objects but add all others.
                     o_resolved = amr_terms_ns[o]
                     g.add( (o_resolved, rdflib.RDF.type, conceptClass) )
+                # identify xref variables in AMR, don't retain it as a part of the graph.
                 else: 
                     continue
                  
@@ -275,6 +292,11 @@ def run_main_on_file(args):
                 # remember which objects have name objects 
                 if( p == 'name' ):
                     label_lookup_table[o] = s 
+                    
+                # objects with value objects should also be in  
+                elif( p == 'xref' and args.fixXref):
+                    xref_variables[o] = s   
+               
                 elif( re.search('^ARG\d+$', p) is not None ):
 
                     frameRole = frames[s] + "." + p
@@ -283,6 +305,9 @@ def run_main_on_file(args):
 
                     g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
                     g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )                    
+                    vb_lookup[s] = temp_ns[s]
+                    vb_lookup[frameRole] = pb_ns[frameRole]
+                    vb_lookup[o] = temp_ns[o]
 
                 elif( re.search('^ARG\d+\-of$', p) is not None ):
                     
@@ -291,10 +316,19 @@ def run_main_on_file(args):
                         frameRole = p
                         
                     g.add( (pb_ns[frameRole], rdflib.RDF.type, frameRoleClass) )
-                    g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )                    
+                    g.add( (temp_ns[s], pb_ns[frameRole], temp_ns[o] ) )        
+                    vb_lookup[s] = temp_ns[s]
+                    vb_lookup[frameRole] = pb_ns[frameRole]
+                    vb_lookup[o] = temp_ns[o]
+                
                 else:
+                
                     g.add( (amr_terms_ns[p], rdflib.RDF.type, roleClass) )
                     g.add( (temp_ns[s], amr_terms_ns[p], temp_ns[o]) )
+                    vb_lookup[s] = temp_ns[s]
+                    vb_lookup[p] = amr_terms_ns[p]
+                    vb_lookup[o] = temp_ns[o]
+    
 
             # Add data properties in the current AMR
             labels = {}
@@ -316,6 +350,18 @@ def run_main_on_file(args):
                     
                     labels[ss].append( (opN, l) )
 
+                elif( xref_variables.get(s,None) is not None 
+                      and p == 'value'
+                      and args.fixXref):
+                    for k in xref_namespace_lookup.keys():
+                        if( l.startswith(k) ):
+                            l2 = l[-len(l)+len(k):]
+                            xref_vb = xref_variables.get(s,None)
+                            resolved_xref_vb = vb_lookup.get(xref_vb,None)
+                            g.add( (resolved_xref_vb, 
+                                    amr_ns['xref'], 
+                                    xref_namespace_lookup[k][l2]) )
+                            
                 # Special treatment for propbank roles.                 
                 elif( re.search('ARG\d+$', p) is not None ):
                     
@@ -375,6 +421,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--outPath', help='RDF output file or directory')
 
     parser.add_argument('-pbr', '--pbankRoles', default='1', help='Do we include PropBank Roles?')
+    parser.add_argument('-kx', '--fixXref', default='1', help='Keep existing Xref formalism?')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-f', '--format', nargs='?', default='nt',
                         help="RDF Format: xml, n3, nt, trix, rdfa")

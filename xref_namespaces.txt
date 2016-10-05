@@ -1,0 +1,3 @@
+UNIPROT	http://www.uniprot.org/uniprot/
+PUBCHEM	https://pubchem.ncbi.nlm.nih.gov/compound/	
+GO	http://amigo.geneontology.org/amigo/term/GO:
